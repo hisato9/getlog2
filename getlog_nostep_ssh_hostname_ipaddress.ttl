@@ -1,0 +1,208 @@
+;hide macro dialog
+show -1
+
+;check Tera Term version
+;------------------------------------------------
+getver version '4.100'
+if result < 0 then
+  end
+endif
+;------------------------------------------------
+
+;get current date with the format "yyyymmdd"
+;------------------------------------------------
+getdate CurDate '%Y%m%d'
+;------------------------------------------------
+;get current time with the format "HHMMSS" and JST
+;------------------------------------------------
+gettime CurTime '%H%M%S'
+;------------------------------------------------
+
+;definition for workname file
+;------------------------------------------------
+;warkname file
+WorkNAME = 'workname.txt'
+;------------------------------------------------
+
+;split ttl filename with "_"
+;------------------------------------------------
+strreplace param1 1 '.ttl' ''
+strsplit param1 '_'
+temp_1 = groupmatchstr2
+temp_2 = groupmatchstr3
+temp_3 = groupmatchstr4
+temp_4 = groupmatchstr5
+;------------------------------------------------
+
+;set bastion server switch value
+;------------------------------------------------
+;use       : 0
+;don't use : 1(default)
+step_sw = 1
+strmatch temp_1 'nostep'
+if !result step_sw = 0
+;------------------------------------------------
+
+;set connection method switch value
+;------------------------------------------------
+;console : 0
+;telnet  : 1
+;ssh     : 2(default)
+conn_sw = 2
+strmatch temp_2 'con'
+if result conn_sw = 0
+strmatch temp_2 'telnet'
+if result conn_sw = 1
+;------------------------------------------------
+
+;set hostname and ip address
+;------------------------------------------------
+hostname = temp_3
+ipaddress = temp_4
+;------------------------------------------------
+
+;definition for workname file
+;------------------------------------------------
+;commandlist file
+sprintf2 CmdLIST 'cmdlist.lst' hostname
+;------------------------------------------------
+
+;set username and password from credentials
+;------------------------------------------------
+getpassword 'credentials.dat' 'username' username
+getpassword 'credentials.dat' 'password' password
+;------------------------------------------------
+
+;set log folder
+;------------------------------------------------
+foldersearch 'log'
+if !result foldercreate 'log'
+getdir logdir
+strconcat logdir "\log\"
+;------------------------------------------------
+
+;set workname
+;------------------------------------------------
+fileopen WN WorkNAME 0 1
+filereadln WN workname
+if result break
+strreplace workname 1 ' ' ''
+strreplace workname 1 '　' ''
+fileclose WN
+;------------------------------------------------
+
+;disable timeout
+timeout = 0
+
+;set logfile name
+;------------------------------------------------
+sprintf2 logfilename '%s_%s_%s-%s.log' workname hostname CurDate CurTime
+makepath logfile logdir logfilename
+;------------------------------------------------
+
+;set connection command
+;------------------------------------------------
+if conn_sw = 0 then
+  sprintf2 con_string = '/C=%s' com_port
+elseif conn_sw = 1 then
+  sprintf2 con_string '%s:23 /nossh /T=1 /TIMEOUT=10' ipaddress
+else
+  sprintf2 con_string '%s:8122 /ssh /2 /auth=password /user=%s /passwd=%s' ipaddress username password
+endif
+;------------------------------------------------
+
+;set prompt
+prompt = '.*#'
+;connect host
+connect con_string
+;autolog check
+loginfo log_check
+if result logclose
+;flush receive buffer
+flushrecv
+;hide host connection window
+showtt -1
+;disable keyboard operations during macro working
+enablekeyb 0
+;chage window title(meaninglessly)
+sprintf2 title '%s(%s)' hostname ipaddress
+settitle title
+;wait 500 milliseconds(meaninglessly)
+mpause 500
+;logging with append mode and no log dialog
+logopen logfile 1 1 0 0 1
+
+;confirm hostname from prompt
+waitregex '.*'
+sendln ''
+waitregex '.*'
+temp_prompt = matchstr
+strmatch temp_prompt hostname
+if !result then
+  sendln 'exit'
+endif
+
+;change enable mode for Cisco IOS/IOS-XE
+strmatch temp_prompt '.*>'
+if result then
+  sendln 'enable'
+  wait 'Password:'
+  sendln password
+endif
+
+;first process after login and enable
+;------------------------------------------------
+sendln ''
+waitregex prompt
+sendln 'ter len 0'
+sendln 'show users'
+sendln ''
+sendln 'show clock'
+sendln ''
+sendln ''
+sendln ''
+waitregex prompt
+;------------------------------------------------
+
+;execute commands from commandlist
+;------------------------------------------------
+fileopen CL CmdLIST 0 1
+exec_sw = 0
+sprintf2 chk_hostname '\[%s\]' hostname
+while 1
+  filereadln CL VAL
+  if result break
+  strmatch VAL '^!.*'
+  if !result then
+    strmatch VAL '^\[.*'
+    if result then
+      strmatch VAL chk_hostname
+      if result then
+        exec_sw = 1
+      else
+        exec_sw = 0
+      endif
+      continue
+    endif
+    if exec_sw then
+      sendln VAL
+      sendln ''
+      waitregex prompt
+    endif
+  endif
+endwhile
+fileclose CL
+;------------------------------------------------
+
+;end process
+;------------------------------------------------
+;enable keyboard operation
+enablekeyb 1
+
+sendln 'show clock'
+;wait 500 milliseconds(meaninglessly)
+mpause 500
+sendln ''
+waitregex prompt
+sendln 'exit'
+;------------------------------------------------

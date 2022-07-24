@@ -1,0 +1,100 @@
+!以下に実行するCisco IOS/IOS-XEのコマンドを記載してください。
+!showコマンド以外のコマンドはサポートしていないので、記載しないようにしてください。
+!例：
+!dir
+!show user
+!show version
+!show boot
+!show env
+!show module
+!show hw-module port-group all
+!show inventory raw
+!show post
+!show license
+!show license all
+!show facility-alarm status
+!show process cpu history
+!show process memory
+!show mac address-table
+!show ip arp
+!show cdp entry *
+!show cdp neighbor
+!show cdp neighbor detail
+!show cdp interface
+!show cdp traffic
+!show lldp entry *
+!show lldp error
+!show lldp neighbor
+!show lldp neighbor detail
+!show lldp interface
+!show lldp traffic
+!show udld
+!show udld neighbor
+!show adjacency
+!show vlan
+!show vlan mtu
+!show span
+!show span summary
+!show span detail
+!show span bridge
+!show span root
+!show span inconsistentports
+!show power inline
+!show vtp status
+!show system mtu
+!show int status
+!show int description
+!show int trunk
+!show int stats
+!show int accounting
+!show int switchport
+!show int transceiver
+!show int mtu
+!show int summary
+!show etherch summary
+!show etherch detail
+!show etherch load-balance
+!show etherch port
+!show etherch port-channel
+!show standby
+!show standby neighbors
+!show standby brief
+!show dtp interface
+!show idb all
+!show vrf summary
+!show vrf detail
+!show ip int brief
+!show protocols
+!shwo ntp status
+!show ntp associations
+!show ip cef
+!show ip access-lists
+!show ip protocols
+!show ip route
+!show ip route conncted
+!show ip route static
+!show ip route ospf
+!show ip route eigrp
+!show ip route bgp
+!show ip eigrp neighors
+!show ip eigrp interface
+!show ip eigrp topology
+!show ip eigrp events
+!show ip ospf neighbor
+!show ip ospf interface
+!show ip ospf topology-info
+!show ip ospf database
+!show ip ospf rib
+!show ip ospf events
+!show ip bgp summary
+!show ip bgp topology
+!show run
+!show start
+!show log
+!show log xml
+!show history all
+!ログ取得するコマンドはこの下の行から書いてください。
+[Hostname]
+show version
+show run
+show log
